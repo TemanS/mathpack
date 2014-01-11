@@ -1,13 +1,18 @@
-#-------------------------------------------------
+# There are no QT gui elements in this library, so let's delete them
+# from the build.
 #
-# Project created by QtCreator 2011-12-16T14:03:53
-#
-#-------------------------------------------------
-
 QT       -= gui
 
+# TARGET is mathpack, and TEMPLATE is lib, so the output of this build will
+# be libmathpack.a
+#
 TARGET = mathpack
 TEMPLATE = lib
+
+INCLUDEPATH += $$PWD/../include
+DEPENDPATH += $$PWD/../lib
+
+LIBS += -L$$PWD/../lib/libqpgui.a
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -24,8 +29,9 @@ SOURCES += mathpack.cpp \
     leastcommult.cpp \
     factors.cpp
 
-HEADERS += mathpack.h\
-        mathpack_global.h \
+HEADERS += \
+    mathpack.h\
+    mathpack_global.h \
     randomop.h \
     randomc.h \
     mpscore.h \
@@ -35,12 +41,15 @@ HEADERS += mathpack.h\
     leastcommult.h \
     factors.h
 
+# Output the libqpgui.a file to the directory immediately above the
+# respective build file.
+#
 debug {
-    DESTDIR = $$PWD/debug
+    DESTDIR = ../lib
 }
 
 release {
-    DESTDIR = $$PWD/release
+    DESTDIR = ../lib
 }
 
 symbian {
@@ -61,27 +70,4 @@ unix:!symbian {
     }
     INSTALLS += target
 }
-
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../qpgui/release/ -lqpgui
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../qpgui/debug/ -lqpgui
-else:symbian: LIBS += -lqpgui
-else:unix: LIBS += -L$$PWD/../qpgui/ -lqpgui
-
-INCLUDEPATH += $$PWD/../qpgui
-DEPENDPATH += $$PWD/../qpgui
-
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../qpgui/release/qpgui.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../qpgui/debug/qpgui.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$PWD/../qpgui/libqpgui.a
-
-
-
-
-
-
-
-
-
-
 
