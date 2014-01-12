@@ -1,7 +1,5 @@
-# There are no QT gui elements in this library, so let's delete them
-# from the build.
-#
-QT       -= gui
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # TARGET is mathpack, and TEMPLATE is lib, so the output of this build will
 # be libmathpack.a
@@ -9,12 +7,11 @@ QT       -= gui
 TARGET = mathpack
 TEMPLATE = lib
 
-INCLUDEPATH += $$PWD/../include
-DEPENDPATH += $$PWD/../lib
+INCLUDEPATH += ../../include
+DEPENDPATH += /../../lib
 
-LIBS += -L$$PWD/../lib/libqpgui.a
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+win32:CONFIG(debug, debug|release): LIBS += -L../../lib -lqpgui
+else:unix: LIBS += -L../../lib -lqpgui
 
 CONFIG += staticlib
 
@@ -41,33 +38,12 @@ HEADERS += \
     leastcommult.h \
     factors.h
 
-# Output the libqpgui.a file to the directory immediately above the
-# respective build file.
+# Output the libqpgui.a file to the local lib directory
 #
 debug {
-    DESTDIR = ../lib
+    DESTDIR = ../../lib
 }
 
 release {
-    DESTDIR = ../lib
+    DESTDIR = ../../lib
 }
-
-symbian {
-    MMP_RULES += EXPORTUNFROZEN
-    TARGET.UID3 = 0xE2F8CEF6
-    TARGET.CAPABILITY =
-    TARGET.EPOCALLOWDLLDATA = 1
-    addFiles.sources = mathpack.dll
-    addFiles.path = !:/sys/bin
-    DEPLOYMENT += addFiles
-}
-
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
-    } else {
-        target.path = /usr/lib
-    }
-    INSTALLS += target
-}
-
