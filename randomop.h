@@ -42,6 +42,8 @@ public:
     RandOp(QPoint& lmm, QPoint& rmm);
     void setMinMax(QPoint& lmm, QPoint& rmm);
     void setMinMax(QRect& limits);
+    void setMaxCombo(int maxCombo);
+    int getMaxCombo();
     void getPair(QPoint& opr, bool swap=false);
     void getPair(QPoint& opr, QPoint& lmm, QPoint& rmm, bool swap=false);
     void getPair(QPoint& opr, QRect& limits, bool swap=false);
@@ -55,6 +57,10 @@ private:
 
     QList<int> m_qlLopRepeats;
     QList<int> m_qlRopRepeats;
+    QList<int> m_qlPrRepeats[2];
+
+    int m_maxCombo;  // Maximum number of possible operand pairs
+
     QPoint m_Lmm;    // Left operand min/max randomizing limits
     QPoint m_Rmm;    // Right operand min/max randomizing limits
     CRandomMersenne *pRand;

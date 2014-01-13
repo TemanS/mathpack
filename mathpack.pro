@@ -8,7 +8,7 @@ TARGET = mathpack
 TEMPLATE = lib
 
 INCLUDEPATH += ../../include
-DEPENDPATH += /../../lib
+DEPENDPATH += ../../lib
 
 win32:CONFIG(debug, debug|release): LIBS += -L../../lib -lqpgui
 else:unix: LIBS += -L../../lib -lqpgui

@@ -26,6 +26,8 @@
 
 #include "randomop.h"
 
+enum { prLeft, prRight };
+
 RandOp::RandOp(QPoint &lmm, QPoint &rmm)
 {
     this->init();
@@ -45,10 +47,26 @@ void RandOp::setMinMax(QPoint& lmm, QPoint& rmm)
     m_Rmm = rmm;
 }
 
+void RandOp::setMaxCombo(int maxCombo)
+{
+    m_maxCombo = maxCombo;
+}
+
+int RandOp::getMaxCombo()
+{
+    return m_maxCombo;
+}
+
 void RandOp::setMinMax(QRect& limits)
 {
     m_Lmm = QPoint(limits.x(), limits.y());
     m_Rmm = QPoint(limits.width(), limits.height());
+
+    // Now that we have the min/max left operand, and the min/max
+    // right operand, we can determine the maximum number of unique
+    // combinations of operands we can have.
+    //
+    setMaxCombo(m_Lmm.x() * m_Rmm.y());
 }
 
 void RandOp::getPair(QPoint& opr, bool swap)
@@ -74,13 +92,17 @@ void RandOp::getTwoOps(QPoint& opr, bool swap)
     int right;
 
     do {
-        left = pRand->IRandomX(m_Lmm.x(), m_Lmm.y());
-    } while (findMatch(left, m_qlLopRepeats) >= 0);
+        do {
+            left = pRand->IRandomX(m_Lmm.x(), m_Lmm.y());
+        } while (findMatch(left, m_qlLopRepeats) >= 0);
 
-    do {
-        right = pRand->IRandomX(m_Rmm.x(), m_Rmm.y());
-    } while (findMatch(right, m_qlRopRepeats) >= 0);
+        do {
+            right = pRand->IRandomX(m_Rmm.x(), m_Rmm.y());
+        } while (findMatch(right, m_qlRopRepeats) >= 0);
+    } while(!uniquePair(left, right));
 
+    if(m_qlPrRepeats[0].size() < getMaxCombo());// {
+        //m_qlPrRepeats
     if(swap && (right > left)) {
         int temp = left;
         left = right;
