@@ -33,7 +33,15 @@
 #include <time.h>
 #include "randomc.h"
 
-#define REPEATS 7  // After 10 int pairs, repeats are allowed again
+enum {
+    op_left,
+    op_right
+};
+
+enum {
+    op_unique,
+    op_notunique
+};
 
 class RandOp
 {
@@ -42,8 +50,6 @@ public:
     RandOp(QPoint& lmm, QPoint& rmm);
     void setMinMax(QPoint& lmm, QPoint& rmm);
     void setMinMax(QRect& limits);
-    void setMaxCombo(int maxCombo);
-    int getMaxCombo();
     void getPair(QPoint& opr, bool swap=false);
     void getPair(QPoint& opr, QPoint& lmm, QPoint& rmm, bool swap=false);
     void getPair(QPoint& opr, QRect& limits, bool swap=false);
@@ -53,16 +59,20 @@ public:
 private:
     void init();
     int findMatch(int x, QList<int>& repeatList);
+    int findMatchPair(int left, int right);
     void getTwoOps(QPoint& opr, bool swap);
+    void setMaxOps();
 
     QList<int> m_qlLopRepeats;
     QList<int> m_qlRopRepeats;
     QList<int> m_qlPrRepeats[2];
 
-    int m_maxCombo;  // Maximum number of possible operand pairs
+    int m_maxNumLeftOps;        // Maximum number of left operands
+    int m_maxNumRightOps;       // Maximum number of right operands
+    int m_maxNumOperandPairs;   // Maximum number of operand pairs
 
-    QPoint m_Lmm;    // Left operand min/max randomizing limits
-    QPoint m_Rmm;    // Right operand min/max randomizing limits
+    QPoint m_Lmm;               // Left operand min/max values
+    QPoint m_Rmm;               // Right operand min/max values
     CRandomMersenne *pRand;
 };
 

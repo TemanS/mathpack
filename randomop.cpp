@@ -31,42 +31,41 @@ enum { prLeft, prRight };
 RandOp::RandOp(QPoint &lmm, QPoint &rmm)
 {
     this->init();
-    m_Lmm = lmm;
-    m_Rmm = rmm;
+    setMinMax(lmm, rmm);
 }
 
 void RandOp::init()
 {
     int seed = (int)time(0);
     pRand = new CRandomMersenne(seed);
+    m_qlPrRepeats[op_left].clear();
+    m_qlPrRepeats[op_right].clear();
 }
 
 void RandOp::setMinMax(QPoint& lmm, QPoint& rmm)
 {
     m_Lmm = lmm;
     m_Rmm = rmm;
-}
-
-void RandOp::setMaxCombo(int maxCombo)
-{
-    m_maxCombo = maxCombo;
-}
-
-int RandOp::getMaxCombo()
-{
-    return m_maxCombo;
+    setMaxOps();
 }
 
 void RandOp::setMinMax(QRect& limits)
 {
     m_Lmm = QPoint(limits.x(), limits.y());
     m_Rmm = QPoint(limits.width(), limits.height());
+    setMaxOps();
+}
 
-    // Now that we have the min/max left operand, and the min/max
-    // right operand, we can determine the maximum number of unique
-    // combinations of operands we can have.
+void RandOp::setMaxOps()
+{
+    m_maxNumRightOps = abs(m_Lmm.y() - m_Lmm.x());
+    m_maxNumRightOps = abs(m_Rmm.y() - m_Rmm.x());
+
+    // Determine the maximum number of possible operand pairs by
+    // multiplying the maximum number of left operands times the
+    // maximum number of right operands.
     //
-    setMaxCombo(m_Lmm.x() * m_Rmm.y());
+    m_maxNumOperandPairs = m_maxNumLeftOps * m_maxNumRightOps;
 }
 
 void RandOp::getPair(QPoint& opr, bool swap)
@@ -92,17 +91,10 @@ void RandOp::getTwoOps(QPoint& opr, bool swap)
     int right;
 
     do {
-        do {
-            left = pRand->IRandomX(m_Lmm.x(), m_Lmm.y());
-        } while (findMatch(left, m_qlLopRepeats) >= 0);
-
-        do {
+            left  = pRand->IRandomX(m_Lmm.x(), m_Lmm.y());
             right = pRand->IRandomX(m_Rmm.x(), m_Rmm.y());
-        } while (findMatch(right, m_qlRopRepeats) >= 0);
-    } while(!uniquePair(left, right));
+    } while(findMatchPair(left, right) != op_unique);
 
-    if(m_qlPrRepeats[0].size() < getMaxCombo());// {
-        //m_qlPrRepeats
     if(swap && (right > left)) {
         int temp = left;
         left = right;
@@ -123,9 +115,33 @@ int RandOp::getOneUnique(int min, int max)
     int val;
     do {
         val = pRand->IRandomX(min, max);
-    } while (findMatch(val, m_qlRopRepeats) >= 0);
+    } while (findMatch(val, m_qlRopRepeats) != op_unique);
 
     return val;
+}
+
+int RandOp::findMatchPair(int left, int right)
+{
+    int index;
+
+    for(index = 0; index < m_qlPrRepeats[op_left].size(); index++) {
+        if((left  == m_qlPrRepeats[op_left][index])
+        && (right == m_qlPrRepeats[op_right][index])) {
+            break;
+        }
+    }
+
+    if(index >= m_maxNumOperandPairs) {
+        m_qlPrRepeats[op_left].clear();
+        m_qlPrRepeats[op_right].clear();
+    }
+
+    if(m_qlPrRepeats[op_left].size() < m_maxNumOperandPairs) {
+        m_qlPrRepeats[op_left].append(left);
+        m_qlPrRepeats[op_right].append(right);
+    }
+
+    return index >= m_qlPrRepeats[op_left].size() ? op_unique : op_notunique;
 }
 
 // If it finds a match, returns the index of the match.
@@ -134,20 +150,22 @@ int RandOp::getOneUnique(int min, int max)
 int RandOp::findMatch(int x, QList<int>& repeatList)
 {
     int i;
+
     for(i = 0; i < repeatList.size(); ++i)
         if(x == repeatList[i])
             break;
 
-    // If we reached the maximum number of repeats without finding a match,
-    // then put the number into the first entry of the list.
+    // If we reached the maximum number of operands, without finding a
+    // match, then clear the list so we can start the list from the
+    // beginning again.
     //
-    if(i >= REPEATS)
-        repeatList[0] = x;
+    if(i >= m_maxNumRightOps)
+        repeatList.clear();
 
-    // If the list isn't full, put a unique number into it.
+    // If we did not find a match, put the unique number into the list.
     //
-    if(repeatList.size() < REPEATS)
+    if(repeatList.size() < m_maxNumRightOps)
         repeatList.append(x);
 
-    return i >= repeatList.size() ? i : -1;
+    return i >= repeatList.size() ? op_unique : op_notunique;
 }
