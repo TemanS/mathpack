@@ -7,8 +7,8 @@ LeastComMult::LeastComMult()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// getLowestCommonDenominator
-//	Uses prime numbers to determine the least common denominator with
+// getLeastCommonMultiple
+//	Uses prime numbers to determine the least common multiple with
 //	a table.
 //
 //	See http://en.wikipedia.org/wiki/Least_common_multiple about half
