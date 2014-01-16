@@ -25,8 +25,14 @@
 ******************************************************************************/
 
 #include "randomop.h"
+#include <QDebug>
 
 enum { prLeft, prRight };
+
+RandOp::RandOp()
+{
+    init();
+}
 
 RandOp::RandOp(QPoint &lmm, QPoint &rmm)
 {
@@ -42,6 +48,14 @@ void RandOp::init()
     m_qlPrRepeats[op_right].clear();
 }
 
+// setMinMax - initialize the internal min/max operand value parameters.
+//
+// This should only be called ONCE for each set of tests, not for every
+// problem.
+//
+// QPoint lmm - min/max values of the Left operand
+// QPoint rmm - min/max values of the Right operand
+//
 void RandOp::setMinMax(QPoint& lmm, QPoint& rmm)
 {
     m_Lmm = lmm;
@@ -49,6 +63,13 @@ void RandOp::setMinMax(QPoint& lmm, QPoint& rmm)
     setMaxOps();
 }
 
+// setMinMax - initialize the internal min/max operand value parameters.
+//
+// Overloaded version.
+//
+// QRect limits - contains the min/max values for the Left and Right
+// operands.
+//
 void RandOp::setMinMax(QRect& limits)
 {
     m_Lmm = QPoint(limits.x(), limits.y());
@@ -56,9 +77,11 @@ void RandOp::setMinMax(QRect& limits)
     setMaxOps();
 }
 
+// setMaxOps - set the maximum number of operands
+//
 void RandOp::setMaxOps()
 {
-    m_maxNumRightOps = abs(m_Lmm.y() - m_Lmm.x());
+    m_maxNumLeftOps  = abs(m_Lmm.y() - m_Lmm.x());
     m_maxNumRightOps = abs(m_Rmm.y() - m_Rmm.x());
 
     // Determine the maximum number of possible operand pairs by
@@ -66,44 +89,72 @@ void RandOp::setMaxOps()
     // maximum number of right operands.
     //
     m_maxNumOperandPairs = m_maxNumLeftOps * m_maxNumRightOps;
+    m_zeroCount = 0;
+    m_sameCount = 0;
+
+    qDebug() << "maxNumLeftOps:  " << m_maxNumLeftOps << endl
+             << "maxNumRightOps: " << m_maxNumRightOps << endl
+             << "m_MaxNumOperandPairs: " << m_maxNumOperandPairs << endl;
 }
 
-void RandOp::getPair(QPoint& opr, bool swap)
-{
-    getTwoOps(opr, swap);
-}
-
-void RandOp::getPair(QPoint& opr, QPoint& lmm, QPoint& rmm, bool swap)
+// getPair - overloaded function to return a pair of unique operands.
+//
+// QPoint ops - will contain the new operand pair.
+// QPoint lmm - contains the min/max values of the Left operand
+// QPoint rmm - contains the min/max values of the Right operand
+// bool swap  - when true, puts the larger of the two operands in the
+//              Left position. Default value is false.
+//
+void RandOp::getPair(QPoint& ops, QPoint& lmm, QPoint& rmm, bool swap)
 {
     setMinMax(lmm, rmm);
-    getTwoOps(opr, swap);
+    getTwoOps(ops, swap);
 }
 
-void RandOp::getPair(QPoint& opr, QRect& limits, bool swap)
+// getPair - overloaded function to return a pair of unique operands.
+//
+// QPoint ops   - will contain the new operand pair.
+// QRect limits - contains the min/max values of the Left and Right
+//                operands.
+// bool swap  - when true, puts the larger of the two operands in the
+//              Left position. Default value is false.
+//
+void RandOp::getPair(QPoint& ops, QRect& limits, bool swap)
 {
     setMinMax(limits);
-    getTwoOps(opr, swap);
+    getTwoOps(ops, swap);
 }
 
-void RandOp::getTwoOps(QPoint& opr, bool swap)
+// getPair - overloaded function to return a pair of unique operands.
+//
+// This instance of getPair() assumes that the limits have already been
+// set and that setMaxOps has already been called.
+//
+// QPoint ops - will contain the new operand pair.
+// bool swap  - when true, puts the larger of the two operands in the
+//              Left position. Default value is false.
+//
+void RandOp::getPair(QPoint& ops, bool swap)
 {
-    int left;
-    int right;
-
-    do {
-            left  = pRand->IRandomX(m_Lmm.x(), m_Lmm.y());
-            right = pRand->IRandomX(m_Rmm.x(), m_Rmm.y());
-    } while(findMatchPair(left, right) != op_unique);
-
-    if(swap && (right > left)) {
-        int temp = left;
-        left = right;
-        right = temp;
-    }
-
-    opr.setX(left);
-    opr.setY(right);
+    getTwoOps(ops, swap);
 }
+
+#if 0
+// getPair - overloaded function to return a pair of unique operands.
+//
+// This instance of getPair() will return an
+// This instance of getPair() assumes that the limits have already been
+// set and that setMaxOps has already been called.
+//
+// QPoint ops - will contain the new operand pair.
+// bool swap  - when true, puts the larger of the two operands in the
+//              Left position. Default value is false.
+//
+void RandOp::getPairMultiple(QPoint& ops, bool swap)
+{
+
+}
+#endif
 
 int RandOp::getOne(int min, int max)
 {
@@ -120,13 +171,65 @@ int RandOp::getOneUnique(int min, int max)
     return val;
 }
 
-int RandOp::findMatchPair(int left, int right)
+bool RandOp::checkUnique(QPoint &ops)
+{
+    return findMatchPair(ops.x(), ops.y());
+}
+
+/***********************************************
+** PRIVATE FUNCTIONS
+************************************************/
+
+void RandOp::getTwoOps(QPoint& ops, bool swap)
+{
+    int left;
+    int right;
+
+    do {
+            left  = pRand->IRandomX(m_Lmm.x(), m_Lmm.y());
+            right = pRand->IRandomX(m_Rmm.x(), m_Rmm.y());
+
+            // Don't allow both operands to be zero, and only allow
+            // MAXZEROS zero operands and MAXSAMES operands to be
+            // identical.
+            //
+            if((left == 0 && right == 0)
+            || m_zeroCount >= MAXZEROS
+            || m_sameCount >= MAXSAMES)
+                continue;
+
+            if(left == 0 || right == 0)
+                m_zeroCount++;
+
+            if(left == right)
+                m_sameCount++;
+
+    } while(findMatchPair(left, right) != op_unique);
+
+    if(swap && (right > left)) {
+        int temp = left;
+        left = right;
+        right = temp;
+    }
+
+    ops.setX(left);
+    ops.setY(right);
+}
+
+int RandOp::findMatchPair(int leftOp, int rightOp)
 {
     int index;
 
+    qDebug() << "NEW OPS " << endl
+             << "\tLeft:  " << leftOp << endl
+             << "\tRight: " << rightOp;
+
     for(index = 0; index < m_qlPrRepeats[op_left].size(); index++) {
-        if((left  == m_qlPrRepeats[op_left][index])
-        && (right == m_qlPrRepeats[op_right][index])) {
+        if((leftOp  == m_qlPrRepeats[op_left][index])
+        && (rightOp == m_qlPrRepeats[op_right][index])) {
+            qDebug() << "Found match at index: " << index << endl
+                     << "\tLeft:  " << m_qlPrRepeats[op_left][index] << endl
+                     << "\tRight: " << m_qlPrRepeats[op_right][index] << endl;
             break;
         }
     }
@@ -136,10 +239,26 @@ int RandOp::findMatchPair(int left, int right)
         m_qlPrRepeats[op_right].clear();
     }
 
+    // If we have a new unique operand pair, store them in the operand
+    // repeats lists. We must also bump the index, since we are increasing
+    // the size of the arrays, and will be using the size of the arrays
+    // to tell us whether we found a unique pair. If we don't bump the
+    // index, we could return that the pair is unique, when it is not.
+    //
     if(m_qlPrRepeats[op_left].size() < m_maxNumOperandPairs) {
-        m_qlPrRepeats[op_left].append(left);
-        m_qlPrRepeats[op_right].append(right);
+        m_qlPrRepeats[op_left].append(leftOp);
+        m_qlPrRepeats[op_right].append(rightOp);
+        index++;
     }
+
+    qDebug() << "INDEX: " << index << endl
+             << "Current size of Repeats Lists: "
+             << m_qlPrRepeats[op_left].size();
+
+    if(index >= m_qlPrRepeats[op_left].size())
+        qDebug() << "This pair is unique";
+    else
+        qDebug() << "This pair is NOT unique.";
 
     return index >= m_qlPrRepeats[op_left].size() ? op_unique : op_notunique;
 }

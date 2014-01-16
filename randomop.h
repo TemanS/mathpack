@@ -33,20 +33,18 @@
 #include <time.h>
 #include "randomc.h"
 
+#define MAXZEROS 2
+#define MAXSAMES 2
+
 enum {
     op_left,
     op_right
 };
 
-enum {
-    op_unique,
-    op_notunique
-};
-
 class RandOp
 {
 public:
-    RandOp() { init(); };
+    RandOp();
     RandOp(QPoint& lmm, QPoint& rmm);
     void setMinMax(QPoint& lmm, QPoint& rmm);
     void setMinMax(QRect& limits);
@@ -55,11 +53,17 @@ public:
     void getPair(QPoint& opr, QRect& limits, bool swap=false);
     int getOne(int min, int max);
     int getOneUnique(int min, int max);
+    bool checkUnique(QPoint& ops);
+
+    enum {
+        op_unique,
+        op_notunique
+    };
 
 private:
     void init();
     int findMatch(int x, QList<int>& repeatList);
-    int findMatchPair(int left, int right);
+    int findMatchPair(int leftOp, int rightOp);
     void getTwoOps(QPoint& opr, bool swap);
     void setMaxOps();
 
@@ -70,6 +74,8 @@ private:
     int m_maxNumLeftOps;        // Maximum number of left operands
     int m_maxNumRightOps;       // Maximum number of right operands
     int m_maxNumOperandPairs;   // Maximum number of operand pairs
+    int m_zeroCount;            // Count number of zero operands
+    int m_sameCount;            // Count number of times ops are the same
 
     QPoint m_Lmm;               // Left operand min/max values
     QPoint m_Rmm;               // Right operand min/max values
