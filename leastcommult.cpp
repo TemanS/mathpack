@@ -16,7 +16,6 @@ LeastComMult::LeastComMult()
 //
 // Arguments
 //	numList - QList of numbers to process
-//	count	- the count of numbers to be processed
 //
 // Returns
 //	lcm - Least Common Multiple
