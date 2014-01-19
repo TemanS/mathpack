@@ -50,6 +50,7 @@ public:
     void clear();
     void setMinMax(QPoint& lmm, QPoint& rmm);
     void setMinMax(QRect& limits);
+    void setMinMax(int leftMin, int leftMax, int rightMin, int rightMax);
     void getPair(QPoint& opr, bool swap=false);
     void getPair(QPoint& opr, QPoint& lmm, QPoint& rmm, bool swap=false);
     void getPair(QPoint& opr, QRect& limits, bool swap=false);
@@ -97,6 +98,7 @@ private:
     int m_zeroCount;            // Count number of operands = 0
     int m_onesCount;            // Count number of operands = 1
     int m_sameCount;            // Count number of times ops are the same
+    bool m_isMinMaxSet;         // True value indicates minMax has been set
 
     QPoint m_Lmm;               // Left operand min/max values
     QPoint m_Rmm;               // Right operand min/max values

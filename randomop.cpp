@@ -61,21 +61,25 @@ void RandOp::clear()
     m_qlPrRepeats[op_right].clear();
     m_qlLopRepeats.clear();
     m_qlRopRepeats.clear();
+    m_isMinMaxSet = false;  // initial value ...
 }
 
 // setMinMax - initialize the internal min/max operand value parameters.
 //
 // This should only be called ONCE for each set of tests, not for every
-// problem.
+// problem. m_isMinMaxSet is a boolean that helps assure this.
 //
 // QPoint lmm - min/max values of the Left operand
 // QPoint rmm - min/max values of the Right operand
 //
 void RandOp::setMinMax(QPoint& lmm, QPoint& rmm)
 {
+    if(m_isMinMaxSet)
+        return;
     m_Lmm = lmm;
     m_Rmm = rmm;
     setMaxOps();
+    m_isMinMaxSet = true;
 }
 
 // setMinMax - initialize the internal min/max operand value parameters.
@@ -87,9 +91,29 @@ void RandOp::setMinMax(QPoint& lmm, QPoint& rmm)
 //
 void RandOp::setMinMax(QRect& limits)
 {
+    if(m_isMinMaxSet)
+        return;
     m_Lmm = QPoint(limits.x(), limits.y());
     m_Rmm = QPoint(limits.width(), limits.height());
     setMaxOps();
+    m_isMinMaxSet = true;
+}
+
+// setMinMax - initialize the internal min/max operand value parameters.
+//
+// Overloaded version.
+//
+// QRect limits - contains the min/max values for the Left and Right
+// operands.
+//
+void RandOp::setMinMax(int leftMin, int leftMax, int rightMin, int rightMax)
+{
+    if(m_isMinMaxSet)
+        return;
+    m_Lmm = QPoint(leftMin, leftMax);
+    m_Rmm = QPoint(rightMin, rightMax);
+    setMaxOps();
+    m_isMinMaxSet = true;
 }
 
 // setMaxOps - set the maximum number of operands
@@ -121,7 +145,9 @@ void RandOp::setMaxOps(int maxZeros, int maxOnes, int maxSames, bool commutes)
     // Else the number of "unique" operand pairs is the larger of the
     // number of possible Left or Right operands.
     //
-    if(m_commutes)
+    bool nonZeroMaxNumber = ((m_maxNumLeftOps > 0) && (m_maxNumRightOps > 0));
+
+    if(m_commutes && nonZeroMaxNumber)
         m_maxNumOperandPairs = m_maxNumLeftOps * m_maxNumRightOps;
     else
         m_maxNumOperandPairs = m_maxNumLeftOps > m_maxNumRightOps ?
@@ -189,8 +215,26 @@ int RandOp::getOneUnique(int min, int max)
 {
     int val;
     bool isMatch;
+
     do {
         val = pRand->IRandomX(min, max);
+
+        // If val returned is a zero or one, bump the corresponding
+        // counters and check to see if we've exceeded the maximum
+        // allowable number for those conditions.
+        //
+        if(val == 0) {
+            m_zeroCount++;
+            if(m_zeroCount > m_maxZeros)
+                continue;
+        }
+
+        if(val == 1) {
+            m_onesCount++;
+            if(m_onesCount > m_maxOnes)
+                continue;
+        }
+
         isMatch = findMatch(val, m_qlLopRepeats);
     } while (isMatch);
 
@@ -326,7 +370,7 @@ bool RandOp::findMatchPair(int leftOp, int rightOp)
     // If we find a match, and the repeatList is full, then clear the
     // lists so we can start the lists from the beginning again.
     //
-    if(isRepeat && (index >= m_maxNumOperandPairs)) {
+    if(isRepeat && (m_qlPrRepeats[op_left].size() >= m_maxNumOperandPairs)) {
         m_qlPrRepeats[op_left].clear();
         m_qlPrRepeats[op_right].clear();
     }
@@ -370,13 +414,13 @@ bool RandOp::findMatch(int x, QList<int>& repeatList)
     // If we find a match, and the repeatList is full, then clear the
     // list so we can start the list from the beginning again.
     //
-    if(isMatch && (repeatList.size() >= m_maxNumRightOps))
+    if(isMatch && (repeatList.size() >= m_maxNumOperandPairs))
         repeatList.clear();
 
     // If we did not find a match, and the list is still smaller than
     // the maximum allowable, put the unique number into the list.
     //
-    if( ! isMatch && (repeatList.size() < m_maxNumRightOps))
+    if( ! isMatch && (repeatList.size() < m_maxNumOperandPairs))
         repeatList.append(x);
 
     return isMatch;
