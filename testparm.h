@@ -75,11 +75,13 @@ public:
                   const QString& mask=QString("0000"),
                   const QString& tnm=QString(""));
     void startTest() {m_testParmList[m_index]->pass = 0;}
-    int  getNextTestIndex();
     void updateTest();
     void stopTest();
     void writeEndOfTest(Msg* pMsg);
     void writeFinals(Msg* pMsg);
+
+    int getNextTestIndex();
+    int getCurrentTestIndex() {return m_index;}
 
     void startTimer() {m_timer.start();}
     int  getElapsedTime();
