@@ -26,6 +26,28 @@ QT_END_NAMESPACE
 
 class Msg;
 
+// class TestParm
+//
+// This class contains the test parameters for a test type.
+//
+// count        - number of problems to be presented
+// timeout      - the max length of time allowed for each problem
+// level        - the level of difficulty for the problem set
+// isEnabled    - whether the test type is enabled to run
+// inputMask    - input mask for input from the user
+// testName     - name of the test
+// numberCorrect- number of correct answers
+// pass         - the current test number in the set
+// isOnTime     - whether the user beat the timeout
+// percentScore - user score expressed as a percent of corect answers
+// userAnswer   - the answer given by the user for a given problem
+// correctAnswer- the correct answer for the problem
+// letterScore  - user score expressed as a letter (A - F)
+// userTime     - time it took the user to answer the current problem
+//
+// One TestParm class will be instantiated for each test type, e.g.
+// add, sub, mul, div, etc.
+//
 class TestParm
 {
 public:
@@ -64,6 +86,11 @@ private:
 
 };
 
+// class TestParmManager
+//
+// This class manages the test parameters for each of the test types in
+// a given math drill application.
+//
 class TestParmManager
 {
 public:
