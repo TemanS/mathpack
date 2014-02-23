@@ -10,6 +10,10 @@
 #include <climits>
 #include "randmanager.h"
 
+/**********************************
+ ** PUBLIC ROUTINES
+ *********************************/
+
 RandManager::RandManager()
 {
 }
@@ -31,12 +35,14 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
     minList = mins;
     maxList = maxs;
 
-    // Create a new QList<int> for each term in the problem to be presented
+    // Create an array of QList<int> for each term (dimension) in the
+    // problem to be presented. This should be the maximum number of
+    // terms that can be expected for a given problem type. Some problems
+    // can only have two terms, while others can have two or more.
     // These lists will be used to store values that have already been
     // presented in problems.
     //
-    for(int i = 0; i < dimension; ++i)
-        vList << new QList<int>;
+    vVal.resize(dimension);
 
     // If the caller only sent one min and one max value, then the
     // min/max for each dimension(term) is the same.
@@ -55,19 +61,34 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
     inverseTerms = DEFAULT_INVERSE_TERMS;
 }
 
-QList<int>& RandManager::getValues(int index, QList<int> &currentColumn)
-{
-    for(int i = 0; i < vList.size(); ++i)
-        if(index < vList[i]->size())
-            currentColumn << vList[i][index];
-
-    return currentColumn;
-}
-
+// bool RandManager::isStale - determines whether the values passed are stale
+//
+// QList vals - a list of values, which can be thought of as a "column"
+//              These are the values that are being proposed for presentation
+//              to the user. This function will determine if these values
+//              are "stale" based on whether they are present anywhere else
+//              in the array (QVector vVal) and depending on the "staleness"
+//              policy.
+//
+//              It is possible that the vals.size() can be less than the
+//              dimension originaly passed. For example, this may be a
+//              problem set that can have up to four terms, but this
+//              particular problem in that set is only presenting two
+//              terms, e.g. 2+5 instead of 2+5+7.
+//
+//              rm_none - no inverse terms allowed (4+5 and 5+4 not allowed)
+//              rm_one  - only one of the terms needs to be unique
+//              rm_all  - allow any and all inverse terms
+//
+// Returns true or false, based upon whether the terms are considered stale
+// according to the "staleness" policy.
+//
 bool RandManager::isStale(QList<int> vals)
 {
     bool stale = false;
-    QList<int> currCol;     // Current column of values
+    int terms = vals.size();    // The number of terms in this problem
+    int sofar = vVal[0].size(); // The number of unique terms so far
+    QList<int> aCol;            // A column of values
 
     //////////////////////////////////////////////////////////////////////
     //
@@ -83,35 +104,65 @@ bool RandManager::isStale(QList<int> vals)
     //
     //////////////////////////////////////////////////////////////////////
 
-    // Assuming that all the lists in vList are the same size, because we
-    // always add the vals passed to us to the end of the list.
-    //
-    for(int i = 0; i < vList[0]->size(); ++i) {
-        currCol = getValues(i, currCol);
+    for(int i = 0; i < sofar; ++i) {
+        aCol = getValues(i, terms, aCol);
 
         // If we find the exact same terms in the list, return isStale true.
         //
-        if(currCol == vals)
+        if(aCol == vals)
             return true;
 
         // Check for the maximum allowable number of inverse terms.
         // See the table in randmanager.h
         //
         switch(inverseTerms) {
-        case 0:
-            for(int j; j < vals.size(); ++j) {
-                for(int k = 0; k < currCol.size(); ++k) {
-                    if(vals[j] == currCol[k])
-                        return true;
-                }
-            }
-            return false;
+        case rm_none: stale = checkInverseTerms(vals, aCol); break;
+        case rm_some: stale = !checkUniqueTerms(vals, aCol); break;
+        case rm_all: break;
+        } // end switch
 
-        case 1: break;
-        case 2: break;
-        default: break;
-        }
+        if(stale)
+            return stale;
     }
 
-    return stale;
+    // If we got here, it means we do not have stale terms, as defined by
+    // the "staleness" policy, so let's add the terms to the lists.
+    //
+    for(int i = 0; i < vVal.size(); ++i)
+        vVal[i] << (i < terms ? vals[i] : INT_MIN);
+
+    return false;
+}
+
+/**********************************
+ ** PRIVATE ROUTINES
+ *********************************/
+
+QList<int>& RandManager::
+getValues(int index, int terms, QList<int> &column)
+{
+    for(int i = 0; i < terms; ++i)
+        column << vVal[i][index];
+    return column;
+}
+
+bool RandManager::
+checkInverseTerms(QList<int>& vals, QList<int>& col)
+{
+    int terms = vals.size();
+    for(int j; j < terms; ++j)
+        for(int k = 0; k < terms; ++k)
+            if(vals[j] == col[k])
+                return true;
+    return false;
+}
+
+bool RandManager::
+checkUniqueTerms(QList<int>& vals, QList<int>& col)
+{
+    int terms = vals.size();
+    for(int i = 0; i < terms; ++i)
+        if(vals[0] == col[i])
+            return false;
+    return true;
 }
