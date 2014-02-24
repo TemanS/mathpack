@@ -7,8 +7,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = mathpack
 TEMPLATE = lib
 
-INCLUDEPATH += ../../include
-DEPENDPATH += ../../lib
+INCLUDEPATH += ../include
+DEPENDPATH += ../lib
 
 win32:CONFIG(debug, debug|release): LIBS += -L../../lib -lqpgui
 else:unix: LIBS += -L../../lib -lqpgui
@@ -17,7 +17,7 @@ CONFIG += staticlib
 
 DEFINES += MATHPACK_LIBRARY
 
-SOURCES += mathpack.cpp \
+SOURCES += \
     randomop.cpp \
     mersenne.cpp \
     mpscore.cpp \
@@ -43,9 +43,9 @@ HEADERS += \
 # Output the libqpgui.a file to the local lib directory
 #
 debug {
-    DESTDIR = ../../lib
+    DESTDIR = ../lib
 }
 
 release {
-    DESTDIR = ../../lib
+    DESTDIR = ../lib
 }
