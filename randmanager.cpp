@@ -32,8 +32,6 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 
     dimension = terms;
     problems = probs;
-    minList = mins;
-    maxList = maxs;
 
     // Create an array of QList<int> for each term (dimension) in the
     // problem to be presented. This should be the maximum number of
@@ -47,13 +45,17 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
     // If the caller only sent one min and one max value, then the
     // min/max for each dimension(term) is the same.
     //
-    if(minList.size() == 1)
-        for(int i = 0; i < dimension; ++i)
-            minList[i] = minList[0];
+    for(int i = 0; i < dimension; ++i) {
+        if(mins.size() == 1)
+            minList << mins[0];
+        else
+            maxList << maxs[i];
 
-    if(maxList.size() == 1)
-        for(int i = 0; i < dimension; ++i)
-            maxList[i] = maxList[0];
+        if(maxs.size() == 1)
+            maxList << maxs[0];
+        else
+            minList << mins[i];
+    }
 
     // Let's start by setting inverseOK to false. This means that we will
     // consider terms 2,3 and 3,2 to be the same.
@@ -141,6 +143,7 @@ bool RandManager::isStale(QList<int> vals)
 QList<int>& RandManager::
 getValues(int index, int terms, QList<int> &column)
 {
+    column.clear();
     for(int i = 0; i < terms; ++i)
         column << vVal[i][index];
     return column;
@@ -150,7 +153,7 @@ bool RandManager::
 checkInverseTerms(QList<int>& vals, QList<int>& col)
 {
     int terms = vals.size();
-    for(int j; j < terms; ++j)
+    for(int j = 0; j < terms; ++j)
         for(int k = 0; k < terms; ++k)
             if(vals[j] == col[k])
                 return true;

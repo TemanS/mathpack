@@ -40,14 +40,15 @@ private:
     QList<int> maxList;     // List of max values of terms for each dimension
 
     // QVector vVal is a container for the QLists of values for each term.
-    // Consider a problem set that can require up to three terms in the problem.
+    // Consider a problem set that can require up to three terms in the
+    // problem.
     //
     // vVal[0] is a QList of values that have been presented for the 1st term
     // vVal[1] is a QList of values that have been presented for the 2nd term
     // vVal[2] is a QList of values that have been presented for the 3rd term
     //
-    QVector<QList<int> > vVal;    // Array of Lists of values that have already
-                                 // been presented.
+    QVector<QList<int> > vVal;  // Array of Lists of values that have already
+                                // been presented.
 
     QList<int>& getValues(int index, int terms, QList<int>& column);
     bool checkInverseTerms(QList<int>& vals, QList<int>& col);
