@@ -38,7 +38,7 @@
 
 class MATHPACKSHARED_EXPORT Mathpack {
 public:
-    Mathpack();
+    Mathpack(){}
 };
 
 #endif // MATHPACK_H
