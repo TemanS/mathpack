@@ -89,7 +89,6 @@ bool RandManager::isStale(QList<int> vals)
 {
     bool stale = false;
     int terms = vals.size();    // The number of terms in this problem
-    QList<int> aCol;            // A column of values
 
     //////////////////////////////////////////////////////////////////////
     //
@@ -109,7 +108,7 @@ bool RandManager::isStale(QList<int> vals)
     // Check for the maximum allowable number of inverse terms.
     // See the table in randmanager.h
     //
-    if((stale = checkInverseTerms(vals, aCol)))
+    if((stale = checkInverseTerms(vals)))
         return true;
 
     // If we got here, it means we do not have stale terms, as defined by
@@ -135,37 +134,24 @@ getValues(int index, int terms, QList<int> &column)
 }
 
 bool RandManager::
-checkInverseTerms(QList<int>& vals, QList<int>& col)
+checkInverseTerms(QList<int>& vals)
 {
     int terms = vals.size();    // The number of terms in this problem
     int sofar = vVal[0].size(); // The number of unique terms so far
     QList<int> aCol;            // A column of values
-    int sameCount = 0;
+    QList<int> bCol = vals;
+
+    if(sofar == 0)
+        return false;
+
+    qSort(bCol.begin(), bCol.end());
 
     for(int i = 0; i < sofar; ++i) {
         aCol = getValues(i, terms, aCol);
+        qSort(aCol.begin(), aCol.end());
 
-        // If the terms are identical, then these terms are stale.
-        //
-        if(aCol == vals)
+        if(aCol == bCol)
             return true;
-
-        int terms = vals.size();
-
-        // Count how many of the terms are the same. If there are as
-        // many terms the same as there are terms, regardless of their
-        // order, then the terms are considered stale.
-        //
-        for(int j = 0; j < terms; ++j)
-            for(int k = 0; k < terms; ++k)
-                if(vals[j] == col[k])
-                    ++sameCount;
     }
-
-    switch (inverseTerms) {
-    case rm_none: return(sameCount > 0 ? true : false);
-    case rm_one:  return(sameCount == terms ? true : false);
-    case rm_all:  return false;
-    default:      return false;
-    }
+    return false;
 }

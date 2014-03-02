@@ -51,7 +51,7 @@ private:
                                 // been presented.
 
     QList<int>& getValues(int index, int terms, QList<int>& column);
-    bool checkInverseTerms(QList<int>& vals, QList<int>& col);
+    bool checkInverseTerms(QList<int>& vals);
 };
 
 #endif // RANDMANAGER_H
