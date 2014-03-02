@@ -12,9 +12,9 @@
 // rm_one  - Only one of the terms must be unique.
 // rm_all  - allow any and all inverse terms
 //
-enum rm_inverse {rm_none, rm_some, rm_all};
+enum rm_inverse {rm_none, rm_one, rm_all};
 
-#define DEFAULT_INVERSE_TERMS rm_some
+#define DEFAULT_INVERSE_TERMS rm_one
 #define DEFAULT_DUPLICATES 2
 #define DEFAULT_ZEROS 1
 #define DEFAULT_ONES 1
@@ -52,7 +52,6 @@ private:
 
     QList<int>& getValues(int index, int terms, QList<int>& column);
     bool checkInverseTerms(QList<int>& vals, QList<int>& col);
-    bool checkUniqueTerms(QList<int>& vals, QList<int>& col);
 };
 
 #endif // RANDMANAGER_H

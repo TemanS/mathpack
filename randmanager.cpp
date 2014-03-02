@@ -49,12 +49,12 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
         if(mins.size() == 1)
             minList << mins[0];
         else
-            maxList << maxs[i];
+            minList << mins[i];
 
         if(maxs.size() == 1)
             maxList << maxs[0];
         else
-            minList << mins[i];
+            maxList << maxs[i];
     }
 
     // Let's start by setting inverseOK to false. This means that we will
@@ -89,7 +89,6 @@ bool RandManager::isStale(QList<int> vals)
 {
     bool stale = false;
     int terms = vals.size();    // The number of terms in this problem
-    int sofar = vVal[0].size(); // The number of unique terms so far
     QList<int> aCol;            // A column of values
 
     //////////////////////////////////////////////////////////////////////
@@ -106,26 +105,12 @@ bool RandManager::isStale(QList<int> vals)
     //
     //////////////////////////////////////////////////////////////////////
 
-    for(int i = 0; i < sofar; ++i) {
-        aCol = getValues(i, terms, aCol);
 
-        // If we find the exact same terms in the list, return isStale true.
-        //
-        if(aCol == vals)
-            return true;
-
-        // Check for the maximum allowable number of inverse terms.
-        // See the table in randmanager.h
-        //
-        switch(inverseTerms) {
-        case rm_none: stale = checkInverseTerms(vals, aCol); break;
-        case rm_some: stale = !checkUniqueTerms(vals, aCol); break;
-        case rm_all: break;
-        } // end switch
-
-        if(stale)
-            return stale;
-    }
+    // Check for the maximum allowable number of inverse terms.
+    // See the table in randmanager.h
+    //
+    if((stale = checkInverseTerms(vals, aCol)))
+        return true;
 
     // If we got here, it means we do not have stale terms, as defined by
     // the "staleness" policy, so let's add the terms to the lists.
@@ -152,20 +137,35 @@ getValues(int index, int terms, QList<int> &column)
 bool RandManager::
 checkInverseTerms(QList<int>& vals, QList<int>& col)
 {
-    int terms = vals.size();
-    for(int j = 0; j < terms; ++j)
-        for(int k = 0; k < terms; ++k)
-            if(vals[j] == col[k])
-                return true;
-    return false;
-}
+    int terms = vals.size();    // The number of terms in this problem
+    int sofar = vVal[0].size(); // The number of unique terms so far
+    QList<int> aCol;            // A column of values
+    int sameCount = 0;
 
-bool RandManager::
-checkUniqueTerms(QList<int>& vals, QList<int>& col)
-{
-    int terms = vals.size();
-    for(int i = 0; i < terms; ++i)
-        if(vals[0] == col[i])
-            return false;
-    return true;
+    for(int i = 0; i < sofar; ++i) {
+        aCol = getValues(i, terms, aCol);
+
+        // If the terms are identical, then these terms are stale.
+        //
+        if(aCol == vals)
+            return true;
+
+        int terms = vals.size();
+
+        // Count how many of the terms are the same. If there are as
+        // many terms the same as there are terms, regardless of their
+        // order, then the terms are considered stale.
+        //
+        for(int j = 0; j < terms; ++j)
+            for(int k = 0; k < terms; ++k)
+                if(vals[j] == col[k])
+                    ++sameCount;
+    }
+
+    switch (inverseTerms) {
+    case rm_none: return(sameCount > 0 ? true : false);
+    case rm_one:  return(sameCount == terms ? true : false);
+    case rm_all:  return false;
+    default:      return false;
+    }
 }
