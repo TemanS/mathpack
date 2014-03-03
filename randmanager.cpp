@@ -8,28 +8,40 @@
 
 #include <QtGlobal>
 #include <climits>
+#include <ctime>
+//#include <QDebug>
 #include "randmanager.h"
 
 /**********************************
  ** PUBLIC ROUTINES
  *********************************/
 
-RandManager::RandManager()
-{
-}
-
+//////////////////////////////////////////////////////////////////////////////
+//
+// RandManager constructor
+//
+// terms    - the number of terms each problem can have
+// probs    - the number of problems to be presented
+// mins     - a list of minimum values for each term in the problem
+// maxs     - a list of maximum values for each term in the problem
+//
 RandManager::
 RandManager(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 {
     init(terms, probs, mins, maxs);
 }
 
-void RandManager::
-init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
+//////////////////////////////////////////////////////////////////////////////
+//
+// init - initializes the RandManager
+//
+// terms    - the number of terms each problem can have
+// probs    - the number of problems to be presented
+// mins     - a list of minimum values for each term in the problem
+// maxs     - a list of maximum values for each term in the problem
+//
+void RandManager::init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 {
-    minList.clear();
-    maxList.clear();
-
     dimension = terms;
     problems = probs;
 
@@ -40,11 +52,15 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
     // These lists will be used to store values that have already been
     // presented in problems.
     //
+    vVal.clear();
     vVal.resize(dimension);
 
     // If the caller only sent one min and one max value, then the
     // min/max for each dimension(term) is the same.
     //
+    minList.clear();
+    maxList.clear();
+
     for(int i = 0; i < dimension; ++i) {
         if(mins.size() == 1)
             minList << mins[0];
@@ -57,12 +73,16 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
             maxList << maxs[i];
     }
 
-    // Let's start by setting inverseOK to false. This means that we will
-    // consider terms 2,3 and 3,2 to be the same.
+    // Initialize the random number generator.
     //
-    inverseTerms = DEFAULT_INVERSE_TERMS;
+    int seed = (int)time(0);
+    pRand = new CRandomMersenne(seed);
+
+    smallcount = 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//
 // bool RandManager::isStale - determines whether the values passed are stale
 //
 // QList vals - a list of values, which can be thought of as a "column"
@@ -74,21 +94,15 @@ init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 //
 //              It is possible that the vals.size() can be less than the
 //              dimension originaly passed. For example, this may be a
-//              problem set that can have up to four terms, but this
+//              problem set that can have up to three terms, but this
 //              particular problem in that set is only presenting two
 //              terms, e.g. 2+5 instead of 2+5+7.
 //
-//              rm_none - no inverse terms allowed (4+5 and 5+4 not allowed)
-//              rm_one  - only one of the terms needs to be unique
-//              rm_all  - allow any and all inverse terms
-//
 // Returns true or false, based upon whether the terms are considered stale
-// according to the "staleness" policy.
 //
-bool RandManager::isStale(QList<int> vals)
+bool RandManager::isStale(QList<int> vals, int terms)
 {
     bool stale = false;
-    int terms = vals.size();    // The number of terms in this problem
 
     //////////////////////////////////////////////////////////////////////
     //
@@ -104,28 +118,78 @@ bool RandManager::isStale(QList<int> vals)
     //
     //////////////////////////////////////////////////////////////////////
 
-
-    // Check for the maximum allowable number of inverse terms.
-    // See the table in randmanager.h
-    //
     if((stale = checkInverseTerms(vals)))
         return true;
 
-    // If we got here, it means we do not have stale terms, as defined by
-    // the "staleness" policy, so let's add the terms to the lists.
-    //
     for(int i = 0; i < vVal.size(); ++i)
         vVal[i] << (i < terms ? vals[i] : INT_MIN);
 
     return false;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// getTerms - obtain a unique set of terms to present in the problem
+//
+// terms - reference to a QList that will receive the terms
+//
+// Returns a reference to the QList that has the terms.
+//
+QList<int>& RandManager::getTerms(QList<int>& vals)
+{
+    getTerms(vals, dimension);
+    return vals;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// getTerms - obtain a unique set of terms to present in the problem
+//
+// terms - reference to a QList that will receive the terms
+//
+// Returns a reference to the QList that has the terms.
+//
+QList<int>& RandManager::getTerms(QList<int>& vals, int terms)
+{
+    // This loop obtains terms that are not stale
+    //
+    do {
+        int j = 0;      // count the terms
+        vals.clear();   // clear the vals list
+
+        // This loop obtains the values for the number of terms
+        //
+        do {
+            int k = pRand->IRandomX(minList[j], maxList[j]);
+            bool small = (abs(k) < SMALLEST_NUM);
+            smallcount += small ? 1 : 0;
+            if(small && (smallcount > MAX_SMALLNUM))
+                continue;
+            vals << k;
+            j++;
+        } while(j < terms);
+    } while(isStale(vals, terms));
+
+    return vals;
+}
+
 /**********************************
  ** PRIVATE ROUTINES
  *********************************/
 
-QList<int>& RandManager::
-getValues(int index, int terms, QList<int> &column)
+//////////////////////////////////////////////////////////////////////////////
+//
+// getValues  - get a "column" of values from the vVal vector of QLists of
+//              values
+//
+// index    - index into the vVal vector of QLists of values
+// terms    - the number of terms to read out of the list
+// column   - reference to the "column" of terms read out of the list
+//
+// returns a reference to a QList containing the column of values read out of
+// the vVal vector of QLists
+//
+QList<int>& RandManager::getValues(int index, int terms, QList<int> &column)
 {
     column.clear();
     for(int i = 0; i < terms; ++i)
@@ -133,13 +197,27 @@ getValues(int index, int terms, QList<int> &column)
     return column;
 }
 
-bool RandManager::
-checkInverseTerms(QList<int>& vals)
+//////////////////////////////////////////////////////////////////////////////
+//
+// checkInverseTerms - see if the terms contains all the same terms presented
+//                     before, regardless of the order they are in.
+//
+// vals - reference to a QList of values to be checked.
+//
+// Checking is done by indexing through the vVals vector of QLists, extracting
+// a "column" of values that have been presented previously for each index.
+// The extracted column is subjected to a aSort, as is a copy of the vals
+// QList reference that was passed as a parameter. If they are identical, then
+// the terms are considered to be "stale".
+//
+// Returns "true" if the terms are stale, false otherwise.
+//
+bool RandManager::checkInverseTerms(QList<int>& vals)
 {
     int terms = vals.size();    // The number of terms in this problem
     int sofar = vVal[0].size(); // The number of unique terms so far
     QList<int> aCol;            // A column of values
-    QList<int> bCol = vals;
+    QList<int> bCol = vals;     // A copy of the vals passed ins
 
     if(sofar == 0)
         return false;

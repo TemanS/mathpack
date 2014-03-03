@@ -1,43 +1,35 @@
 #ifndef RANDMANAGER_H
 #define RANDMANAGER_H
 
-// inverseTerms table
-//
-// Inverse Terms are problems that are presented as 4 + 6 and 6 + 4.
-// We want to minimize those to present the user with unique terms
-// for each problem.
-//
-// rm_none - no inverse terms allowed, e.g. 6,5,4 4,5,6, and 5,6,4
-//           are not allowed
-// rm_one  - Only one of the terms must be unique.
-// rm_all  - allow any and all inverse terms
-//
-enum rm_inverse {rm_none, rm_one, rm_all};
-
-#define DEFAULT_INVERSE_TERMS rm_one
-#define DEFAULT_DUPLICATES 2
-#define DEFAULT_ZEROS 1
-#define DEFAULT_ONES 1
 
 #include <QList>
 #include <QVector>
+#include <randomc.h>
+
+#define DEFAULT_INVERSE_TERMS rm_one
+#define SMALLEST_NUM 2  // Smallest number for problem terms
+#define MAX_SMALLNUM 1  // Max quantity of numbers less than MIN_SMALLNUMBER
+
+#define abs(x) (x < 0 ? (x * -1) : x)
 
 class RandManager
 {
 public:
-    RandManager();
+    RandManager(){}
     RandManager(int terms, int probs, QList<int>& mins, QList<int>& maxs);
     void init(int terms, int probs, QList<int>& mins, QList<int>& maxs);
-    bool isStale(QList<int> vals);
-    void setInverseTerms(int state) {inverseTerms = state;}
-    int getInverseTerms() {return inverseTerms;}
+    bool isStale(QList<int> vals, int terms);
+    QList<int>& getTerms(QList<int>& vals);
+    QList<int>& getTerms(QList<int> &vals, int terms);
+    int& getTerms(int& term);
 
 private:
     int dimension;          // The number of terms to track
     int problems;           // The number of problems being presented
-    int inverseTerms;       // Max number of stale terms allowed in a problem
+    int smallcount;         // Count quantity of small number terms
     QList<int> minList;     // List of min values of terms for each dimension
     QList<int> maxList;     // List of max values of terms for each dimension
+    CRandomMersenne *pRand; // Pointer to a random number gernerating class
 
     // QVector vVal is a container for the QLists of values for each term.
     // Consider a problem set that can require up to three terms in the
