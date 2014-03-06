@@ -167,6 +167,7 @@ class CRandomMersenne {                // Encapsulate random number generator
 public:
    CRandomMersenne(int seed) {         // Constructor
       RandomInit(seed); LastInterval = 0;}
+   CRandomMersenne(){}
    void RandomInit(int seed);          // Re-seed
    void RandomInitByArray(int const seeds[], int NumSeeds); // Seed by more than 32 bits
    int IRandom (int min, int max);     // Output random integer
@@ -190,6 +191,7 @@ public:
    uint32_t BRandom();                 // Output random bits
    CRandomMother(int seed) {           // Constructor
       RandomInit(seed);}
+   CRandomMother(){}
 protected:
    uint32_t x[5];                      // History buffer
 };

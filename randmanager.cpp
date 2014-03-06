@@ -26,7 +26,7 @@
 // maxs     - a list of maximum values for each term in the problem
 //
 RandManager::
-RandManager(int terms, int probs, QList<int> &mins, QList<int> &maxs)
+RandManager(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
 {
     init(terms, probs, mins, maxs);
 }
@@ -40,12 +40,13 @@ RandManager(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 // mins     - a list of minimum values for each term in the problem
 // maxs     - a list of maximum values for each term in the problem
 //
-void RandManager::init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
+void
+RandManager::init(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
 {
     dimension = terms;
     problems = probs;
 
-    // Create an array of QList<int> for each term (dimension) in the
+    // Create an array of QVector<int> for each term (dimension) in the
     // problem to be presented. This should be the maximum number of
     // terms that can be expected for a given problem type. Some problems
     // can only have two terms, while others can have two or more.
@@ -76,7 +77,7 @@ void RandManager::init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
     // Initialize the random number generator.
     //
     int seed = (int)time(0);
-    pRand = new CRandomMersenne(seed);
+    rnd.RandomInit(seed);
 
     smallcount = 0;
 }
@@ -85,7 +86,7 @@ void RandManager::init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 //
 // bool RandManager::isStale - determines whether the values passed are stale
 //
-// QList vals - a list of values, which can be thought of as a "column"
+// QVector vals - a list of values, which can be thought of as a "column"
 //              These are the values that are being proposed for presentation
 //              to the user. This function will determine if these values
 //              are "stale" based on whether they are present anywhere else
@@ -100,7 +101,7 @@ void RandManager::init(int terms, int probs, QList<int> &mins, QList<int> &maxs)
 //
 // Returns true or false, based upon whether the terms are considered stale
 //
-bool RandManager::isStale(QList<int> vals, int terms)
+bool RandManager::isStale(QVector<int> vals, int terms)
 {
     bool stale = false;
 
@@ -131,11 +132,11 @@ bool RandManager::isStale(QList<int> vals, int terms)
 //
 // getTerms - obtain a unique set of terms to present in the problem
 //
-// terms - reference to a QList that will receive the terms
+// terms - reference to a QVector that will receive the terms
 //
-// Returns a reference to the QList that has the terms.
+// Returns a reference to the QVector that has the terms.
 //
-QList<int>& RandManager::getTerms(QList<int>& vals)
+QVector<int>& RandManager::getTerms(QVector<int>& vals)
 {
     getTerms(vals, dimension);
     return vals;
@@ -145,11 +146,11 @@ QList<int>& RandManager::getTerms(QList<int>& vals)
 //
 // getTerms - obtain a unique set of terms to present in the problem
 //
-// terms - reference to a QList that will receive the terms
+// terms - reference to a QVector that will receive the terms
 //
-// Returns a reference to the QList that has the terms.
+// Returns a reference to the QVector that has the terms.
 //
-QList<int>& RandManager::getTerms(QList<int>& vals, int terms)
+QVector<int>& RandManager::getTerms(QVector<int>& vals, int terms)
 {
     // This loop obtains terms that are not stale
     //
@@ -160,7 +161,7 @@ QList<int>& RandManager::getTerms(QList<int>& vals, int terms)
         // This loop obtains the values for the number of terms
         //
         do {
-            int k = pRand->IRandomX(minList[j], maxList[j]);
+            int k = rnd.IRandom(minList[j], maxList[j]);
             bool small = (abs(k) < SMALLEST_NUM);
             smallcount += small ? 1 : 0;
             if(small && (smallcount > MAX_SMALLNUM))
@@ -179,17 +180,18 @@ QList<int>& RandManager::getTerms(QList<int>& vals, int terms)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// getValues  - get a "column" of values from the vVal vector of QLists of
+// getValues  - get a "column" of values from the vVal vector of QVectors of
 //              values
 //
-// index    - index into the vVal vector of QLists of values
+// index    - index into the vVal vector of QVectors of values
 // terms    - the number of terms to read out of the list
 // column   - reference to the "column" of terms read out of the list
 //
-// returns a reference to a QList containing the column of values read out of
-// the vVal vector of QLists
+// returns a reference to a QVector containing the column of values read out of
+// the vVal vector of QVectors
 //
-QList<int>& RandManager::getValues(int index, int terms, QList<int> &column)
+QVector<int>&
+RandManager::getValues(int index, int terms, QVector<int> &column)
 {
     column.clear();
     for(int i = 0; i < terms; ++i)
@@ -202,22 +204,22 @@ QList<int>& RandManager::getValues(int index, int terms, QList<int> &column)
 // checkInverseTerms - see if the terms contains all the same terms presented
 //                     before, regardless of the order they are in.
 //
-// vals - reference to a QList of values to be checked.
+// vals - reference to a QVector of values to be checked.
 //
-// Checking is done by indexing through the vVals vector of QLists, extracting
+// Checking is done by indexing through the vVals vector of QVectors, extracting
 // a "column" of values that have been presented previously for each index.
 // The extracted column is subjected to a aSort, as is a copy of the vals
-// QList reference that was passed as a parameter. If they are identical, then
+// QVector reference that was passed as a parameter. If they are identical, then
 // the terms are considered to be "stale".
 //
 // Returns "true" if the terms are stale, false otherwise.
 //
-bool RandManager::checkInverseTerms(QList<int>& vals)
+bool RandManager::checkInverseTerms(QVector<int>& vals)
 {
     int terms = vals.size();    // The number of terms in this problem
     int sofar = vVal[0].size(); // The number of unique terms so far
-    QList<int> aCol;            // A column of values
-    QList<int> bCol = vals;     // A copy of the vals passed ins
+    QVector<int> aCol;            // A column of values
+    QVector<int> bCol = vals;     // A copy of the vals passed ins
 
     if(sofar == 0)
         return false;
