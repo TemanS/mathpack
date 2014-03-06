@@ -67,6 +67,8 @@ public:
     int timeout;                // time allowed to find the answer
     int count;                  // how many problems for this test type?
     QVector<int> opLimits;      // Limt values for operands
+    QVector<int> maxops;        // Problem can have different op limits for
+    QVector<int> minops;        // : each term in the problem
     QString inputMask;          // input mask for this problem type
     //
     //  The following are initialized or updated for each pass in the test.
@@ -107,8 +109,8 @@ public:
     void writeEndOfTest(Msg* pMsg);
     void writeFinals(Msg* pMsg);
 
-    int getNextTestIndex();
-    int getCurrentTestIndex() {return m_index;}
+    int  getNextTestIndex();
+    int  getCurrentTestIndex() {return m_index;}
 
     void startTimer() {m_timer.start();}
     int  getElapsedTime();
@@ -135,6 +137,8 @@ public:
     TestParm* getTestParm(){return m_testParmList[m_index];}
 
     QVector<int> getOperandLimits(int index, int count=1);
+    QVector<int>& getMaxops(int index, int count);
+    QVector<int>& getMinops(int index, int count);
     void initOperandLimits(QVector<int>& opLims, int index);
 
     void setProblem(const QString& problem)
