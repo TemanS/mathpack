@@ -9,6 +9,7 @@
 
 #include <QtCore>
 #include <msg.h>
+#include <randmanager.h>
 
 #define LVLCHK(score) ((score > 75) ? msg::msg_notify : msg::msg_alert)
 
@@ -66,9 +67,32 @@ public:
     int level;                  // level of difficulty
     int timeout;                // time allowed to find the answer
     int count;                  // how many problems for this test type?
+
+    // Test parameters can be presented in a number of different ways.
+    // Originally, I thought that a simple vector containing all the
+    // parameter limits could be used. However, as problems become more
+    // complicated, they can have more than just two operands and each
+    // operand can have its own max/min limits.
+    //
     QVector<int> opLimits;      // Limt values for operands
+
+    // These member variables are for problems that can have more than
+    // two operands, and where each operand can have its own maximum and
+    // minimum limits.
+    //
     QVector<int> maxops;        // Problem can have different op limits for
-    QVector<int> minops;        // : each term in the problem
+    QVector<int> minops;        // : each term in the problem.
+
+    // Each problem type can also have maximum and minimum number of
+    // operands. For example, some problems may have a minimum of 3
+    // operands (quadratics) and others may have maximum of 4 or more
+    // terms.
+    //
+    int maxterms;
+    int minterms;
+
+    RandManager randman;        // An instance of random number manager
+
     QString inputMask;          // input mask for this problem type
     //
     //  The following are initialized or updated for each pass in the test.

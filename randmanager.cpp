@@ -43,8 +43,8 @@ RandManager(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
 void
 RandManager::init(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
 {
-    dimension = terms;
-    problems = probs;
+    m_dimension = terms;
+    m_problems = probs;
 
     // Create an array of QVector<int> for each term (dimension) in the
     // problem to be presented. This should be the maximum number of
@@ -53,33 +53,33 @@ RandManager::init(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
     // These lists will be used to store values that have already been
     // presented in problems.
     //
-    vVal.clear();
-    vVal.resize(dimension);
+    m_vals.clear();
+    m_vals.resize(m_dimension);
 
     // If the caller only sent one min and one max value, then the
     // min/max for each dimension(term) is the same.
     //
-    minList.clear();
-    maxList.clear();
+    m_minList.clear();
+    m_maxList.clear();
 
-    for(int i = 0; i < dimension; ++i) {
+    for(int i = 0; i < m_dimension; ++i) {
         if(mins.size() == 1)
-            minList << mins[0];
+            m_minList << mins[0];
         else
-            minList << mins[i];
+            m_minList << mins[i];
 
         if(maxs.size() == 1)
-            maxList << maxs[0];
+            m_maxList << maxs[0];
         else
-            maxList << maxs[i];
+            m_maxList << maxs[i];
     }
 
     // Initialize the random number generator.
     //
     int seed = (int)time(0);
-    rnd.RandomInit(seed);
+    m_rnd.RandomInit(seed);
 
-    smallcount = 0;
+    m_smallcount = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ RandManager::init(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
 //              These are the values that are being proposed for presentation
 //              to the user. This function will determine if these values
 //              are "stale" based on whether they are present anywhere else
-//              in the array (QVector vVal) and depending on the "staleness"
+//              in the array (QVector m_vals) and depending on the "staleness"
 //              policy.
 //
 //              It is possible that the vals.size() can be less than the
@@ -122,8 +122,8 @@ bool RandManager::isStale(QVector<int> vals, int terms)
     if((stale = checkInverseTerms(vals)))
         return true;
 
-    for(int i = 0; i < vVal.size(); ++i)
-        vVal[i] << (i < terms ? vals[i] : INT_MIN);
+    for(int i = 0; i < m_vals.size(); ++i)
+        m_vals[i] << (i < terms ? vals[i] : INT_MIN);
 
     return false;
 }
@@ -138,7 +138,7 @@ bool RandManager::isStale(QVector<int> vals, int terms)
 //
 QVector<int>& RandManager::getTerms(QVector<int>& vals)
 {
-    getTerms(vals, dimension);
+    getTerms(vals, m_dimension);
     return vals;
 }
 
@@ -161,10 +161,10 @@ QVector<int>& RandManager::getTerms(QVector<int>& vals, int terms)
         // This loop obtains the values for the number of terms
         //
         do {
-            int k = rnd.IRandom(minList[j], maxList[j]);
+            int k = m_rnd.IRandom(m_minList[j], m_maxList[j]);
             bool small = (abs(k) < SMALLEST_NUM);
-            smallcount += small ? 1 : 0;
-            if(small && (smallcount > MAX_SMALLNUM))
+            m_smallcount += small ? 1 : 0;
+            if(small && (m_smallcount > MAX_SMALLNUM))
                 continue;
             vals << k;
             j++;
@@ -180,22 +180,22 @@ QVector<int>& RandManager::getTerms(QVector<int>& vals, int terms)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// getValues  - get a "column" of values from the vVal vector of QVectors of
+// getValues  - get a "column" of values from the m_vals vector of QVectors of
 //              values
 //
-// index    - index into the vVal vector of QVectors of values
+// index    - index into the m_vals vector of QVectors of values
 // terms    - the number of terms to read out of the list
 // column   - reference to the "column" of terms read out of the list
 //
 // returns a reference to a QVector containing the column of values read out of
-// the vVal vector of QVectors
+// the m_vals vector of QVectors
 //
 QVector<int>&
 RandManager::getValues(int index, int terms, QVector<int> &column)
 {
     column.clear();
     for(int i = 0; i < terms; ++i)
-        column << vVal[i][index];
+        column << m_vals[i][index];
     return column;
 }
 
@@ -206,7 +206,7 @@ RandManager::getValues(int index, int terms, QVector<int> &column)
 //
 // vals - reference to a QVector of values to be checked.
 //
-// Checking is done by indexing through the vVals vector of QVectors, extracting
+// Checking is done by indexing through the m_valss vector of QVectors, extracting
 // a "column" of values that have been presented previously for each index.
 // The extracted column is subjected to a aSort, as is a copy of the vals
 // QVector reference that was passed as a parameter. If they are identical, then
@@ -217,7 +217,7 @@ RandManager::getValues(int index, int terms, QVector<int> &column)
 bool RandManager::checkInverseTerms(QVector<int>& vals)
 {
     int terms = vals.size();    // The number of terms in this problem
-    int sofar = vVal[0].size(); // The number of unique terms so far
+    int sofar = m_vals[0].size(); // The number of unique terms so far
     QVector<int> aCol;            // A column of values
     QVector<int> bCol = vals;     // A copy of the vals passed ins
 

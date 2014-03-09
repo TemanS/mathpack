@@ -8,6 +8,11 @@
 
 using namespace tp;
 
+/***********************
+** TestParm Routines
+***********************/
+
+
 TestParm::TestParm()
 {
     opLimits.clear();
@@ -40,6 +45,10 @@ void TestParm::init(
     userAnswer.clear();
     letterScore.clear();
 }
+
+/****************************
+** TestParmManager Routines
+*****************************/
 
 TestParmManager::TestParmManager()
 {

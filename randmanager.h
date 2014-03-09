@@ -24,12 +24,12 @@ public:
     int& getTerms(int& term);
 
 private:
-    int dimension;          // The number of terms to track
-    int problems;           // The number of problems being presented
-    int smallcount;         // Count quantity of small number terms
-    QVector<int> minList;     // List of min values of terms for each dimension
-    QVector<int> maxList;     // List of max values of terms for each dimension
-    CRandomMersenne rnd;        // Instance of Random Generator class
+    int m_dimension;          // The number of terms to track
+    int m_problems;           // The number of problems being presented
+    int m_smallcount;         // Count quantity of small number terms
+    QVector<int> m_minList;   // List of min values of terms for each dimension
+    QVector<int> m_maxList;   // List of max values of terms for each dimension
+    CRandomMersenne m_rnd;    // Instance of Random Generator class
 
     // QVector vVal is a container for the QVectors of values for each term.
     // Consider a problem set that can require up to three terms in the
@@ -39,8 +39,8 @@ private:
     // vVal[1] is a QVector of values that have been presented for the 2nd term
     // vVal[2] is a QVector of values that have been presented for the 3rd term
     //
-    QVector<QVector<int> > vVal;  // Array of Lists of values that have already
-                                // been presented.
+    QVector<QVector<int> > m_vals; // Array of Lists of values that have already
+                                   // been presented.
 
     QVector<int>& getValues(int index, int terms, QVector<int>& column);
     bool checkInverseTerms(QVector<int>& vals);
