@@ -30,6 +30,9 @@ class Msg;
 // class TestParm
 //
 // This class contains the test parameters for a test type.
+// One of these should be instantiated for every test type and
+// every level for that test type, because each test type and
+// each level for a given test type can have its own parameters.
 //
 // count        - number of problems to be presented
 // timeout      - the max length of time allowed for each problem
@@ -37,14 +40,19 @@ class Msg;
 // isEnabled    - whether the test type is enabled to run
 // inputMask    - input mask for input from the user
 // testName     - name of the test
-// numberCorrect- number of correct answers
 // pass         - the current test number in the set
 // isOnTime     - whether the user beat the timeout
-// percentScore - user score expressed as a percent of corect answers
 // userAnswer   - the answer given by the user for a given problem
+// numberCorrect- number of correct answers
 // correctAnswer- the correct answer for the problem
+// percentScore - user score expressed as a percent of corect answers
 // letterScore  - user score expressed as a letter (A - F)
 // userTime     - time it took the user to answer the current problem
+// maxterms     - maximum number of terms for this problem type
+// minterms     - minumum number of terms for this problem type
+// maxops       - an array of max values for each term
+// minops       - an array of min values for each term
+//
 //
 // One TestParm class will be instantiated for each test type, e.g.
 // add, sub, mul, div, etc.
@@ -56,6 +64,7 @@ public:
     TestParm(int cnt, int tmo, int lvl, bool ena = false,
              const QString& mask="0000",
              const QString& tnm=QString(""));
+
     void init(int cnt = 0, int tmo = 0, int lvl = 0, bool ena = false,
               const QString& mask="0000",
               const QString& tnm=QString(""));
@@ -122,11 +131,17 @@ class TestParmManager
 public:
     TestParmManager();  // must not use default constructor!
     TestParmManager(int testCount);
+    TestParmManager(int testCount, int levels);
     ~TestParmManager();
+
+    void initInstance(int testCount);
+    void initPrivates();
+
 
     void initTest(int idx, int cnt, int tmo, int lvl, bool ena=true,
                   const QString& mask=QString("0000"),
                   const QString& tnm=QString(""));
+
     void startTest() {m_testParmList[m_index]->pass = 0;}
     void updateTest();
     void stopTest();
@@ -157,7 +172,7 @@ public:
 
     // Stuff that operates on the TestParm class members.
     //
-    QList<TestParm*> getTestParmList(){return m_testParmList;}
+    QList<TestParm*>& getTestParmList(){return m_testParmList;}
     TestParm* getTestParm(){return m_testParmList[m_index];}
 
     QVector<int> getOperandLimits(int index, int count=1);

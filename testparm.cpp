@@ -50,18 +50,57 @@ void TestParm::init(
 ** TestParmManager Routines
 *****************************/
 
+//*******************************************************************
+// TestParmManager constructor
+//
+// Simple constructor, no parameters.
+//
 TestParmManager::TestParmManager()
 {
-    m_firstRun = true;
-    m_running = false;
-    m_index = 0;
-    m_totalCount = 0;
-    m_totalCorrect = 0;
-    m_maxopsLoaded = false;
     m_testParmListInited = false;
+    initPrivates();
 }
 
+//*******************************************************************
+// TestParmManager constructor overload
+//
+// testCount - number of different test types
+//
 TestParmManager::TestParmManager(int testCount)
+{
+    initInstance(testCount);
+}
+
+//*******************************************************************
+// TestParmManager constructor
+//
+// testCount - number of different test types
+// levels - number of different test levels of difficulty
+//
+TestParmManager::TestParmManager(int testCount, int levels)
+{
+    initInstance(testCount * levels);
+}
+
+//*******************************************************************
+// ~TestParmManager destructor
+//
+TestParmManager::~TestParmManager()
+{
+    for(int i = 0; i < m_testParmList.size(); ++i)
+        delete m_testParmList[i];
+
+    m_testParmList.clear();
+}
+
+//*******************************************************************
+// initInstance(testCount)
+//
+// testCount - total number of tests, including test levels
+//
+// Creates the QList of TestParm class instances
+//
+void TestParmManager::initInstance(int testCount)
 {
     m_testParmList.clear();
     m_operandLimits.clear();
@@ -69,21 +108,23 @@ TestParmManager::TestParmManager(int testCount)
     for(int i = 0; i < testCount; ++i)
         m_testParmList << new TestParm;
 
+    m_testParmListInited = true;
+    initPrivates();
+}
+
+//*******************************************************************
+// initPrivates
+//
+// These private members are always inited the same way.
+//
+void TestParmManager::initPrivates()
+{
     m_firstRun = true;
     m_running = false;
     m_index = 0;
     m_totalCount = 0;
     m_totalCorrect = 0;
     m_maxopsLoaded = false;
-    m_testParmListInited = true;
-}
-
-TestParmManager::~TestParmManager()
-{
-    for(int i = 0; i < m_testParmList.size(); ++i)
-        delete m_testParmList[i];
-
-    m_testParmList.clear();
 }
 
 void TestParmManager::initTest(int idx, int cnt, int tmo, int lvl, bool ena,
