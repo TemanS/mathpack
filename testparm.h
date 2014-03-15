@@ -172,7 +172,7 @@ public:
 
     // Stuff that operates on the TestParm class members.
     //
-    QList<TestParm*>& getTestParmList(){return m_testParmList;}
+    QList<TestParm*> getTestParmList(){return m_testParmList;}
     TestParm* getTestParm(){return m_testParmList[m_index];}
 
     QVector<int> getOperandLimits(int index, int count=1);
