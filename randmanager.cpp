@@ -6,11 +6,13 @@
 // expression to guarantee their uniqueness.
 //
 
+
+#include <mathpack_global.h>
 #include <QtGlobal>
 #include <climits>
 #include <ctime>
 //#include <QDebug>
-#include "randmanager.h"
+#include <randmanager.h>
 
 /**********************************
  ** PUBLIC ROUTINES
@@ -136,9 +138,9 @@ bool RandManager::isStale(QVector<int> vals, int terms)
 //
 // Returns a reference to the QVector that has the terms.
 //
-QVector<int>& RandManager::getTerms(QVector<int>& vals)
+QVector<int>& RandManager::getValues(QVector<int>& vals)
 {
-    getTerms(vals, m_dimension);
+    getValues(vals, m_dimension);
     return vals;
 }
 
@@ -150,7 +152,7 @@ QVector<int>& RandManager::getTerms(QVector<int>& vals)
 //
 // Returns a reference to the QVector that has the terms.
 //
-QVector<int>& RandManager::getTerms(QVector<int>& vals, int terms)
+QVector<int>& RandManager::getValues(QVector<int>& vals, int terms)
 {
     // This loop obtains terms that are not stale
     //
@@ -180,7 +182,7 @@ QVector<int>& RandManager::getTerms(QVector<int>& vals, int terms)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// getValues  - get a "column" of values from the m_vals vector of QVectors of
+// getColumn  - get a "column" of values from the m_vals vector of QVectors of
 //              values
 //
 // index    - index into the m_vals vector of QVectors of values
@@ -191,7 +193,7 @@ QVector<int>& RandManager::getTerms(QVector<int>& vals, int terms)
 // the m_vals vector of QVectors
 //
 QVector<int>&
-RandManager::getValues(int index, int terms, QVector<int> &column)
+RandManager::getColumn(int index, int terms, QVector<int> &column)
 {
     column.clear();
     for(int i = 0; i < terms; ++i)
@@ -227,7 +229,7 @@ bool RandManager::checkInverseTerms(QVector<int>& vals)
     qSort(bCol.begin(), bCol.end());
 
     for(int i = 0; i < sofar; ++i) {
-        aCol = getValues(i, terms, aCol);
+        aCol = getColumn(i, terms, aCol);
         qSort(aCol.begin(), aCol.end());
 
         if(aCol == bCol)

@@ -19,9 +19,9 @@ public:
     RandManager(int terms, int probs, QVector<int>& mins, QVector<int>& maxs);
     void init(int terms, int probs, QVector<int>& mins, QVector<int>& maxs);
     bool isStale(QVector<int> vals, int terms);
-    QVector<int>& getTerms(QVector<int>& vals);
-    QVector<int>& getTerms(QVector<int> &vals, int terms);
-    int& getTerms(int& term);
+    QVector<int>& getValues(QVector<int>& vals);
+    QVector<int>& getValues(QVector<int> &vals, int terms);
+    int& getValues(int& term);
 
 private:
     int m_dimension;          // The number of terms to track
@@ -42,7 +42,7 @@ private:
     QVector<QVector<int> > m_vals; // Array of Lists of values that have already
                                    // been presented.
 
-    QVector<int>& getValues(int index, int terms, QVector<int>& column);
+    QVector<int>& getColumn(int index, int terms, QVector<int>& column);
     bool checkInverseTerms(QVector<int>& vals);
 };
 
