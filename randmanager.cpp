@@ -11,7 +11,9 @@
 #include <QtGlobal>
 #include <climits>
 #include <ctime>
-//#include <QDebug>
+#ifdef RANDMAN_DEBUG
+#include <QDebug>
+#endif
 #include <randmanager.h>
 
 /**********************************
@@ -81,7 +83,11 @@ RandManager::init(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
     int seed = (int)time(0);
     m_rnd.RandomInit(seed);
 
+    m_small = MAX_SMALLNUM;
+    m_smallest = SMALLEST_NUM;
     m_smallcount = 0;
+    m_sames = 1;
+    m_nozero = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -154,24 +160,48 @@ QVector<int>& RandManager::getValues(QVector<int>& vals)
 //
 QVector<int>& RandManager::getValues(QVector<int>& vals, int terms)
 {
-    // This loop obtains terms that are not stale
-    //
-    do {
-        int j = 0;      // count the terms
-        vals.clear();   // clear the vals list
+    vals.clear();   // clear the vals list
 
-        // This loop obtains the values for the number of terms
-        //
-        do {
-            int k = m_rnd.IRandom(m_minList[j], m_maxList[j]);
-            bool small = (abs(k) < SMALLEST_NUM);
-            m_smallcount += small ? 1 : 0;
-            if(small && (m_smallcount > MAX_SMALLNUM))
-                continue;
-            vals << k;
-            j++;
-        } while(j < terms);
-    } while(isStale(vals, terms));
+#ifdef RANDMAN_DEBUG
+    qDebug() << "RandManager::getValues()" << endl;
+    int count = 0;
+#endif
+    // This loop obtains the values for the number of terms
+    //
+    for(int j = 0; j < terms;) {
+        int k = m_rnd.IRandom(m_minList[j], m_maxList[j]);
+
+#ifdef RANDMAN_DEBUG
+        count++;
+        if(count % 10000 == 0) {
+            qDebug() << "k: " << k << " ";
+            for(int m = 0; m < vals.size(); ++m) {
+                qDebug() << "vals[" << m << "]: " << vals[m];
+            }
+        }
+#endif
+        bool small = (abs(k) < m_smallest);
+        if(k < m_smallest)
+            continue;
+
+        if(k == 0 && m_nozero)
+            continue;
+
+        m_smallcount += small ? 1 : 0;
+        if(small && (m_smallcount > m_small))
+            continue;
+
+        vals << k;
+        if(checkSames(vals))
+            continue;
+
+        if(checkInverseTerms(vals))
+            continue;
+        ++j;
+    }
+
+    for(int i = 0; i < vals.size(); ++i)
+        m_vals[i] << (i < terms ? vals[i] : INT_MIN);
 
     return vals;
 }
@@ -210,18 +240,18 @@ RandManager::getColumn(int index, int terms, QVector<int> &column)
 //
 // Checking is done by indexing through the m_valss vector of QVectors, extracting
 // a "column" of values that have been presented previously for each index.
-// The extracted column is subjected to a aSort, as is a copy of the vals
+// The extracted column is subjected to a qSort, as is a copy of the vals
 // QVector reference that was passed as a parameter. If they are identical, then
 // the terms are considered to be "stale".
 //
-// Returns "true" if the terms are stale, false otherwise.
+// Returns "true" if the terms are stale, "false" otherwise.
 //
 bool RandManager::checkInverseTerms(QVector<int>& vals)
 {
-    int terms = vals.size();    // The number of terms in this problem
-    int sofar = m_vals[0].size(); // The number of unique terms so far
-    QVector<int> aCol;            // A column of values
-    QVector<int> bCol = vals;     // A copy of the vals passed ins
+    int terms = vals.size();        // The number of terms in this problem
+    int sofar = m_vals[0].size();   // The number of unique terms so far
+    QVector<int> aCol;              // A column of values
+    QVector<int> bCol = vals;       // A copy of the vals passed ins
 
     if(sofar == 0)
         return false;
@@ -234,6 +264,25 @@ bool RandManager::checkInverseTerms(QVector<int>& vals)
 
         if(aCol == bCol)
             return true;
+    }
+    return false;
+}
+
+bool RandManager::checkSames(QVector<int>& vals)
+{
+    if(vals.size() <= 1)
+        return false;
+
+    for(int j = 0; j < vals.size(); ++j) {
+
+        // compare starting with the next one in the vector
+        //
+        for(int k = j + 1; k < vals.size(); ++k) {
+            if(vals[j] == vals[k]) {
+                vals.remove(k);
+                return true;
+            }
+        }
     }
     return false;
 }

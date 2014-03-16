@@ -22,11 +22,18 @@ public:
     QVector<int>& getValues(QVector<int>& vals);
     QVector<int>& getValues(QVector<int> &vals, int terms);
     int& getValues(int& term);
+    void setSames(int val) {m_sames = val;}
+    void setSmall(int val) {m_small = val;}
+    void setNoZero(bool z) {m_nozero = z;}
 
 private:
     int m_dimension;          // The number of terms to track
     int m_problems;           // The number of problems being presented
-    int m_smallcount;         // Count quantity of small number terms
+    int m_nozero;             // Allow NO zeros
+    int m_sames;              // Max allowable same numbers
+    int m_small;              // Max allowable smallnumbers 0, 1, 2
+    int m_smallest;           // Smallest allowable number
+    int m_smallcount;         // Running count of small numbers
     QVector<int> m_minList;   // List of min values of terms for each dimension
     QVector<int> m_maxList;   // List of max values of terms for each dimension
     CRandomMersenne m_rnd;    // Instance of Random Generator class
@@ -44,6 +51,7 @@ private:
 
     QVector<int>& getColumn(int index, int terms, QVector<int>& column);
     bool checkInverseTerms(QVector<int>& vals);
+    bool checkSames(QVector<int>& vals);
 };
 
 #endif // RANDMANAGER_H
