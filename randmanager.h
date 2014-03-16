@@ -18,9 +18,9 @@ public:
     RandManager(){}
     RandManager(int terms, int probs, QVector<int>& mins, QVector<int>& maxs);
     void init(int terms, int probs, QVector<int>& mins, QVector<int>& maxs);
-    bool isStale(QVector<int> vals, int terms);
+    bool isStale(QVector<int>& vals, int terms);
     QVector<int>& getValues(QVector<int>& vals);
-    QVector<int>& getValues(QVector<int> &vals, int terms);
+    QVector<int>& getValues(QVector<int>& vals, int terms);
     int& getValues(int& term);
     void setSames(int val) {m_sames = val;}
     void setSmall(int val) {m_small = val;}

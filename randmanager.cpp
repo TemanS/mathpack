@@ -109,7 +109,7 @@ RandManager::init(int terms, int probs, QVector<int> &mins, QVector<int> &maxs)
 //
 // Returns true or false, based upon whether the terms are considered stale
 //
-bool RandManager::isStale(QVector<int> vals, int terms)
+bool RandManager::isStale(QVector<int>& vals, int terms)
 {
     bool stale = false;
 
@@ -138,7 +138,7 @@ bool RandManager::isStale(QVector<int> vals, int terms)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// getTerms - obtain a unique set of terms to present in the problem
+// getValues - obtain a unique set of terms to present in the problem
 //
 // terms - reference to a QVector that will receive the terms
 //
@@ -152,7 +152,7 @@ QVector<int>& RandManager::getValues(QVector<int>& vals)
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// getTerms - obtain a unique set of terms to present in the problem
+// getValues - obtain a unique set of terms to present in the problem
 //
 // terms - reference to a QVector that will receive the terms
 //
