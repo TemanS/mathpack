@@ -24,7 +24,7 @@
 **
 ******************************************************************************/
 
-#include "randomop.h"
+#include <randomop.h>
 
 //#define DEBUG_RANDOP
 

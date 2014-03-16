@@ -31,7 +31,7 @@
 #include <QPoint>
 #include <QRect>
 #include <time.h>
-#include "randomc.h"
+#include <randomc.h>
 
 #define DFLTMAXZEROS 1  // Default value for max number of 0 operands
 #define DFLTMAXONES  1  // Default value for max number of 1 operands
