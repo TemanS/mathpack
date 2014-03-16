@@ -25,7 +25,8 @@ SOURCES += \
     resultfilemanager.cpp \
     leastcommult.cpp \
     factors.cpp \
-    randmanager.cpp
+    randmanager.cpp \
+    testparmmanager.cpp
 
 HEADERS += \
     mathpack.h\
@@ -38,7 +39,8 @@ HEADERS += \
     resultfilemanager.h \
     leastcommult.h \
     factors.h \
-    randmanager.h
+    randmanager.h \
+    testparmmanager.h
 
 # Output the libqpgui.a file to the local lib directory
 #
