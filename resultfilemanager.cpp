@@ -3,8 +3,9 @@
 #include <QIODevice>
 
 #include <qpfile.h>
-#include "testparm.h"
-#include "resultfilemanager.h"
+#include <testparm.h>
+#include <testparmmanager.h>
+#include <resultfilemanager.h>
 
 static QString deco =
 "***************************************************************************\n";
