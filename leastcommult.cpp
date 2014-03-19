@@ -15,7 +15,7 @@ LeastComMult::LeastComMult()
 //	way down the page.
 //
 // Arguments
-//	numList - QList of numbers to process
+//	numArray - QVector of numbers to process
 //
 // Returns
 //	lcm - Least Common Multiple
@@ -58,11 +58,10 @@ int LeastComMult::getLeastCommonMultiple(QVector<int>& numArray)
 ///////////////////////////////////////////////////////////////////////////////
 //
 // sumTable
-//	Sum the integers in the table passed by reference.
+//	Sum the integers in the table (QVector) passed by reference.
 //
 // Arguments
-//	table	- pointer to an array of integers
-//	count	- number of integers in the array
+//	table	- reference to a QVector of integers
 //
 // Returns the sum of the integers in the array.
 //
@@ -87,6 +86,7 @@ int LeastComMult::sumTable(QVector<int>& table)
 // Globals : none
 // Arguments
 //	prime - a prime number number
+//
 // Returns the next prime number
 //
 int LeastComMult::getNextPrime(int prime)
