@@ -10,8 +10,6 @@
 #define SMALLEST_NUM 2  // Smallest number for problem terms
 #define MAX_SMALLNUM 1  // Max quantity of numbers less than MIN_SMALLNUMBER
 
-#define abs(x) (x < 0 ? (x * -1) : x)
-
 class RandManager
 {
 public:
