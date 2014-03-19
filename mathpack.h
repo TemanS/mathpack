@@ -41,4 +41,8 @@ public:
     Mathpack(){}
 };
 
+#define max(a,b)((a > b) ? a : b)
+#define min(a,b)((a < b) ? a : b)
+#define abs(x)((x < 0) ? (x * -1) : x)
+
 #endif // MATHPACK_H
