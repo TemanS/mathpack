@@ -13,11 +13,13 @@ public:
     Factors();
     Factors(int a, int b);
     QVector<int> getCommonFactors(int a, int b);
+    int getGreatestComFactor(int a, int b);
     int getGreatestComFactor() {return m_gcf_exists ? m_facvec.last() : 1;}
     bool existCommonFactors() {return m_gcf_exists;}
 
 private:
     QVector<int> getFactors(int x);
+    void init(int a, int b);
 
     QVector<int> m_avec;                // FactorsA
     QVector<int> m_bvec;                // FactorsB

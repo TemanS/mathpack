@@ -6,9 +6,20 @@ Factors::Factors()
 
 Factors::Factors(int a, int b)
 {
+    this->init(a, b);
+}
+
+void Factors::init(int a, int b)
+{
     m_avec.clear();
     m_bvec.clear();
     getCommonFactors(a, b);
+}
+
+int Factors::getGreatestComFactor(int a, int b)
+{
+    this->init(a, b);
+    return m_gcf_exists ? m_facvec.last() : 1;
 }
 
 QVector<int> Factors::getCommonFactors(int a, int b)
